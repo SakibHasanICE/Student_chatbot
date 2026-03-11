@@ -1,9 +1,20 @@
 services:
+  # Backend FastAPI chatbot API
   - type: web
-    name: tutor-chatbot
+    name: student-chatbot-api
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: OPENROUTER_API_KEY
-        value: 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
+        sync: false  # Set this in Render dashboard (don't hardcode keys!)
+
+  # Frontend Streamlit UI
+  - type: web
+    name: student-chatbot-ui
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port 10000 --server.address 0.0.0.0 --server.headless true
+    envVars:
+      - key: CHATBOT_API_URL
+        value: https://student-chatbot-api.onrender.com  # Update with your actual API URL
