@@ -6,4 +6,4 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: OPENROUTER_API_KEY
-        value: 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
+        value: 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
