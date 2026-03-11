@@ -164,6 +164,10 @@ if "session_id" not in st.session_state:
     st.session_state.session_id = None
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+if "pending_message" not in st.session_state:
+    st.session_state.pending_message = ""
 
 # Sidebar
 with st.sidebar:
@@ -217,26 +221,38 @@ else:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Input area
+def submit():
+    if st.session_state.user_input.strip():
+        st.session_state.submitted = True
+        st.session_state.pending_message = st.session_state.user_input.strip()
+
 col1, col2 = st.columns([5, 1])
 with col1:
-    user_input = st.text_input(
+    st.text_input(
         "message",
         placeholder="Ask a question... e.g. Explain photosynthesis for Class 8",
         label_visibility="collapsed",
-        key="user_input"
+        key="user_input",
+        on_change=submit
     )
 with col2:
-    send_clicked = st.button("Send ➤")
+    if st.button("Send ➤"):
+        submit()
 
-# Handle message send
-if (send_clicked or user_input) and user_input.strip():
+# Handle message send — only fires once per actual submission
+if st.session_state.submitted and st.session_state.pending_message:
+    user_text = st.session_state.pending_message
+    st.session_state.submitted = False
+    st.session_state.pending_message = ""
+
     # Add user message to display
-    st.session_state.messages.append({"role": "user", "content": user_input.strip()})
+    st.session_state.messages.append({"role": "user", "content": user_text})
 
     # Call API
     with st.spinner("EduTutor is thinking..."):
         try:
-            payload = {"message": user_input.strip()}
+            import re
+            payload = {"message": user_text}
             if st.session_state.session_id:
                 payload["session_id"] = st.session_state.session_id
 
@@ -253,7 +269,6 @@ if (send_clicked or user_input) and user_input.strip():
 
             # Clean up <think> tags if model returns them
             if "<think>" in assistant_reply:
-                import re
                 assistant_reply = re.sub(r'<think>.*?</think>', '', assistant_reply, flags=re.DOTALL).strip()
 
             st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
