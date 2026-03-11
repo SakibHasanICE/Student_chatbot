@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: tutor-chatbot
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
-    envVars:
-      - key: OPENROUTER_API_KEY
-        value: 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
